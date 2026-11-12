@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1978 Wrapped Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Shrikhand&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: full-bleed color screens like Wrapped story cards, one 720px column, big Shrikhand headlines. */
+  --ink: #14121F;
+  --paper: #FFF7E6;
+  --blue: #2D3BFF;
+  --sun: #FFD23F;
+  --pink: #FF4D8D;
+  --orange: #FF6A2B;
+  --teal: #19C3B1;
+  --lime: #C4F44C;
+  --bg: var(--blue);
+  --fg: var(--paper);
+  --accent: var(--sun);
+  --display: 'Shrikhand', 'Cooper Black', Georgia, serif;
+  --body: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+body[data-screen="futurist"]  { --bg: var(--teal);   --fg: var(--ink); --accent: var(--paper); }
+body[data-screen="trailblazer"] { --bg: var(--pink);  --fg: var(--ink); --accent: var(--sun); }
+body[data-screen="disruptor"] { --bg: var(--orange); --fg: var(--ink); --accent: var(--paper); }
+body[data-screen="bridge"]    { --bg: var(--lime);   --fg: var(--ink); --accent: var(--blue); }
+body[data-screen="main"]      { --bg: var(--sun);    --fg: var(--ink); --accent: var(--pink); }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 18px;
+  line-height: 1.45;
+  transition: background-color .35s ease, color .35s ease;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+h1:focus { outline: none; }
+
+.shell { max-width: 720px; margin: 0 auto; padding: 20px 16px 56px; display: flex; flex-direction: column; gap: 24px; min-height: 100vh; }
+
+/* progress bars, same idea as story stories */
+.bars { display: flex; gap: 6px; }
+.bars span { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--fg) 28%, transparent); }
+.bars span.done { background: var(--fg); }
+.bars span.now { background: var(--accent); }
+
+.eyebrow { margin: 0; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; font-size: 13px; }
+h1 { font-family: var(--display); font-weight: 400; line-height: 1.02; margin: 0; text-wrap: balance; }
+.q-title { font-size: clamp(32px, 7vw, 52px); }
+.lede { font-size: 20px; max-width: 34em; margin: 0; }
+
+.stack { display: flex; flex-direction: column; gap: 18px; }
+
+/* answer buttons */
+.options { display: grid; gap: 12px; }
+.options.events { grid-template-columns: 1fr; }
+@media (min-width: 600px) { .options.events { grid-template-columns: 1fr 1fr; } }
+.opt {
+  text-align: left;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 5px 0 var(--ink);
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+}
+.opt:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); }
+.opt:active, .opt.picked { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.opt.picked { background: var(--sun); }
+.opt .name { font-weight: 800; font-size: 19px; line-height: 1.2; }
+.opt .blurb { font-size: 15px; opacity: .8; }
+.date {
+  font-weight: 800; font-size: 12px; letter-spacing: .1em;
+  background: var(--ink); color: var(--paper);
+  border-radius: 999px; padding: 2px 10px;
+}
+.opt.plain { font-weight: 600; }
+
+.btn {
+  border: 3px solid var(--ink);
+  background: var(--ink); color: var(--paper);
+  border-radius: 999px; padding: 14px 28px; font-weight: 800; font-size: 18px;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--ink) 55%, transparent);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 55%, transparent); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--fg); box-shadow: none; }
+body[data-screen="start"] .btn, body[data-screen="q"] .btn { background: var(--sun); color: var(--ink); }
+body[data-screen="start"] .btn.ghost, body[data-screen="q"] .btn.ghost { background: transparent; color: var(--fg); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.link { background: none; border: 0; padding: 4px 0; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; align-self: flex-start; }
+
+/* start screen */
+.start-year { font-family: var(--display); font-size: clamp(110px, 30vw, 220px); line-height: .85; margin: 0; color: var(--sun); letter-spacing: -.02em; }
+.start-title { font-size: clamp(34px, 8vw, 60px); }
+.start { justify-content: center; flex: 1; }
+
+/* result */
+.result-name { font-size: clamp(46px, 12vw, 96px); }
+.tagline { font-size: 22px; font-weight: 600; margin: 0; max-width: 28em; }
+.panel { border: 3px solid var(--fg); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.panel h2 { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; }
+.panel p { margin: 0; }
+.panel .top-event { font-weight: 800; font-size: 22px; line-height: 1.2; }
+.mix { display: grid; gap: 10px; }
+.mix-row { display: grid; grid-template-columns: 8.5em 1fr 3em; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; }
+.mix-row .track { height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--fg) 18%, transparent); overflow: hidden; }
+.mix-row .fill { height: 100%; background: var(--fg); border-radius: 7px; transform-origin: left; animation: grow .7s cubic-bezier(.2,.8,.2,1) both; }
+.mix-row.me .fill { background: var(--accent); box-shadow: inset 0 0 0 3px var(--fg); }
+.mix-row .pct { text-align: right; font-variant-numeric: tabular-nums; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.pair { font-size: 16px; }
+.toast { font-weight: 800; min-height: 1.4em; }
+@media (max-width: 440px) {
+  .mix-row { grid-template-columns: 6.6em 1fr 2.8em; font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body data-screen="start">
+<div class="shell" id="app"></div>
+
+<script>
+// LOGIC-START
+const TYPES = {
+  futurist: {
+    name: "The Futurist",
+    tagline: "You were born ready for whatever comes next.",
+    body: "While everyone else was living in 1978, you were already living in 2038. You want to know how it works, who built it and what it unlocks. People bring you the weird gadget and ask, \"Is this actually good?\"",
+    today: "The Navstar satellite launched in February 1978 is the ancestor of every map app, ride pickup and time-stamped transaction you use. Louise Brown, born that July, was the first baby conceived through IVF. Millions of people have been born the same way since.",
+    pair: "Pairs well with The Bridge-Builder, who turns your big ideas into plans other people can follow."
+  },
+  trailblazer: {
+    name: "The Trailblazer",
+    tagline: "You show up first so everyone else can follow.",
+    body: "You see what is unfair and you move before the poll results come in. You carry the sign, sew the flag or walk all the way to Washington. You are not waiting to be invited to the table. You are building a longer one.",
+    today: "The rainbow flag first flew at San Francisco's Gay Freedom Day Parade on June 25, 1978, and now flies worldwide. The Pregnancy Discrimination Act and the American Indian Religious Freedom Act, both signed that year, are still law.",
+    pair: "Pairs well with The Disruptor, who has the nerve to push on the doors you want opened."
+  },
+  disruptor: {
+    name: "The Disruptor",
+    tagline: "You don't wait for permission or for the vote.",
+    body: "You notice the system running on autopilot and you grab the controls. Sometimes that means a ballot measure and sometimes it means a plan so bold it needs its own movie. Boring is the only thing you refuse to be.",
+    today: "California's Proposition 13, passed in June 1978, still shapes how property is taxed in the state. The Iranian Revolution that began that year reshaped the Middle East. The Lufthansa heist at JFK later inspired the film Goodfellas.",
+    pair: "Pairs well with The Main Character, who will happily watch the chaos and tell the story afterward."
+  },
+  bridge: {
+    name: "The Bridge-Builder",
+    tagline: "You see two sides and start laying planks.",
+    body: "You are the person who gets the two friends who aren't speaking into the same room. Borders, oceans and decades of bad feelings look like engineering problems to you. You believe a conversation can start before the apology does.",
+    today: "At Camp David in September 1978, Egypt and Israel agreed to a framework that became their 1979 peace treaty, which still stands. That August, the Double Eagle II became the first balloon to cross the Atlantic, landing in France six days after leaving Maine.",
+    pair: "Pairs well with The Futurist, who gives you the tools to reach everyone at once."
+  },
+  main: {
+    name: "The Main Character",
+    tagline: "Every era needs someone who actually enjoys it.",
+    body: "History needs treaties and tax votes, but it also needs a lazy orange cat, a sing-along and a homebrew in your hand. You make everything feel more fun. People remember 1978 the way they do partly because of you.",
+    today: "Garfield debuted June 19, 1978, and is still running. Grease still gets sing-alongs at parties. President Carter's October 1978 signing that legalized home brewing helped kick off the craft beer boom.",
+    pair: "Pairs well with The Trailblazer, who gives your joy a cause worth dancing to."
+  }
+};
+
+const ORDER = ["futurist", "trailblazer", "disruptor", "bridge", "main"];
+
+const EVENTS = [
+  { id: "gps",     type: "futurist",    date: "FEB 22",   name: "First GPS satellite launches", blurb: "Navstar 1 goes up. Every map app begins here." },
+  { id: "walk",    type: "trailblazer", date: "FEB–JUL",  name: "The Longest Walk", blurb: "Native activists walk from San Francisco to Washington, D.C." },
+  { id: "prop13",  type: "disruptor",   date: "JUN 6",    name: "Proposition 13 passes", blurb: "California voters slash property taxes." },
+  { id: "grease",  type: "main",        date: "JUN 16",   name: "Grease hits theaters", blurb: "The soundtrack takes over the radio." },
+  { id: "garfield",type: "main",        date: "JUN 19",   name: "Garfield debuts", blurb: "A cat who hates Mondays enters the funny pages." },
+  { id: "flag",    type: "trailblazer", date: "JUN 25",   name: "Rainbow flag first flies", blurb: "San Francisco's Gay Freedom Day Parade." },
+  { id: "louise",  type: "futurist",    date: "JUL 25",   name: "First IVF baby is born", blurb: "Louise Brown arrives in England." },
+  { id: "balloon", type: "bridge",      date: "AUG 17",   name: "Balloon crosses the Atlantic", blurb: "Double Eagle II lands in France after six days." },
+  { id: "campdavid",type:"bridge",      date: "SEP 17",   name: "Camp David Accords signed", blurb: "Egypt and Israel agree on a path to peace." },
+  { id: "heist",   type: "disruptor",   date: "DEC 11",   name: "The Lufthansa heist", blurb: "Millions disappear from JFK Airport." }
+];
+
+const QUESTIONS = [
+  {
+    kind: "events",
+    weight: 2,
+    title: "Which 1978 moment is your favorite?",
+    options: EVENTS
+  },
+  {
+    kind: "plain",
+    weight: 1,
+    title: "Saturday night, 1978. Where are we?",
+    options: [
+      { type: "futurist",    name: "At home, taking apart the newest gadget" },
+      { type: "trailblazer", name: "Painting signs for tomorrow's march" },
+      { type: "disruptor",   name: "At a packed town hall, microphone in hand" },
+      { type: "bridge",      name: "Hosting dinner for friends from three countries" },
+      { type: "main",        name: "At the roller rink, glitter on, full commitment" }
+    ]
+  },
+  {
+    kind: "plain",
+    weight: 1,
+    title: "Your role in every group project:",
+    options: [
+      { type: "futurist",    name: "The one who already found a better tool" },
+      { type: "trailblazer", name: "The one who makes sure every voice is heard" },
+      { type: "disruptor",   name: "The one who says what nobody wants to say" },
+      { type: "bridge",      name: "The one who gets two people to compromise" },
+      { type: "main",        name: "The one who keeps morale and the memes alive" }
+    ]
+  },
+  {
+    kind: "plain",
+    weight: 1,
+    title: "Pick the motto for your yearbook page.",
+    options: [
+      { type: "futurist",    name: "Why wait for the future? Build it." },
+      { type: "trailblazer", name: "No seat at the table? Bring a flag." },
+      { type: "disruptor",   name: "Rules are suggestions with paperwork." },
+      { type: "bridge",      name: "Everybody sit down. Let's talk." },
+      { type: "main",        name: "If it isn't fun, why do it?" }
+    ]
+  }
+];
+
+// picks: array of option indexes, one per question
+function score(picks) {
+  const totals = {}; ORDER.forEach(t => totals[t] = 0);
+  let max = 0;
+  picks.forEach((p, qi) => {
+    const q = QUESTIONS[qi];
+    totals[q.options[p].type] += q.weight;
+    max += q.weight;
+  });
+  const firstType = QUESTIONS[0].options[picks[0]].type;
+  let winner = firstType;
+  ORDER.forEach(t => { if (totals[t] > totals[winner]) winner = t; });
+  const pct = {}; ORDER.forEach(t => pct[t] = Math.round(100 * totals[t] / max));
+  return { totals, pct, winner };
+}
+// LOGIC-END
+
+const app = document.getElementById("app");
+let step = 0;            // 0 = start, 1..4 = questions, 5 = result
+let picks = [];
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function bars(n) {
+  let h = '<div class="bars" aria-hidden="true">';
+  for (let i = 1; i <= QUESTIONS.length; i++) h += '<span class="' + (i < n ? "done" : i === n ? "now" : "") + '"></span>';
+  return h + "</div>";
+}
+
+function renderStart() {
+  document.body.dataset.screen = "start";
+  app.innerHTML =
+    '<div class="stack start">' +
+    '<p class="eyebrow">Your year in review</p>' +
+    '<p class="start-year">1978</p>' +
+    '<h1 class="start-title" id="h" tabindex="-1">Wrapped. Which kind of 1978 person are you?</h1>' +
+    '<p class="lede">Four quick questions. Your favorite moment of the year counts double.</p>' +
+    '<div class="row"><button class="btn" id="go">Unwrap my 1978</button></div>' +
+    '</div>';
+  document.getElementById("go").onclick = () => { step = 1; picks = []; render(); };
+}
+
+function renderQuestion() {
+  const qi = step - 1, q = QUESTIONS[qi];
+  document.body.dataset.screen = "q";
+  let opts = "";
+  q.options.forEach((o, i) => {
+    if (q.kind === "events") {
+      opts += '<button class="opt" data-i="' + i + '"><span class="date">' + esc(o.date) + '</span><span class="name">' + esc(o.name) + '</span><span class="blurb">' + esc(o.blurb) + '</span></button>';
+    } else {
+      opts += '<button class="opt plain" data-i="' + i + '"><span class="name">' + esc(o.name) + '</span></button>';
+    }
+  });
+  app.innerHTML =
+    bars(step) +
+    '<div class="stack">' +
+    '<p class="eyebrow">Question ' + step + ' of ' + QUESTIONS.length + (q.weight > 1 ? ' · counts double' : '') + '</p>' +
+    '<h1 class="q-title" id="h" tabindex="-1">' + esc(q.title) + '</h1>' +
+    '<div class="options ' + (q.kind === "events" ? "events" : "") + '">' + opts + '</div>' +
+    (step > 1 ? '<button class="link" id="back">Back</button>' : '') +
+    '</div>';
+  app.querySelectorAll(".opt").forEach(b => {
+    b.onclick = () => {
+      b.classList.add("picked");
+      picks[qi] = Number(b.dataset.i);
+      setTimeout(() => { step += 1; render(); }, 220);
+    };
+  });
+  const back = document.getElementById("back");
+  if (back) back.onclick = () => { step -= 1; picks.length = step - 1; render(); };
+}
+
+function renderResult() {
+  const r = score(picks);
+  const t = TYPES[r.winner];
+  const topEvent = EVENTS[picks[0]];
+  document.body.dataset.screen = r.winner;
+  let mix = "";
+  ORDER.slice().sort((a, b) => r.pct[b] - r.pct[a]).forEach(k => {
+    mix += '<div class="mix-row' + (k === r.winner ? " me" : "") + '"><span>' + esc(TYPES[k].name.replace("The ", "")) + '</span><span class="track"><span class="fill" style="display:block;width:' + Math.max(r.pct[k], 3) + '%"></span></span><span class="pct">' + r.pct[k] + '%</span></div>';
+  });
+  app.innerHTML =
+    '<div class="stack">' +
+    '<p class="eyebrow">Your 1978 Wrapped</p>' +
+    '<h1 class="result-name" id="h" tabindex="-1">' + esc(t.name) + '</h1>' +
+    '<p class="tagline">' + esc(t.tagline) + '</p>' +
+    '<p class="lede">' + esc(t.body) + '</p>' +
+    '<section class="panel"><h2>Your top moment</h2><p class="top-event"><span class="date" style="background:var(--fg);color:var(--bg)">' + esc(topEvent.date) + '</span><br>' + esc(topEvent.name) + '</p></section>' +
+    '<section class="panel"><h2>Your 1978 mix</h2><div class="mix">' + mix + '</div></section>' +
+    '<section class="panel"><h2>Still with us today</h2><p>' + esc(t.today) + '</p></section>' +
+    '<p class="pair">' + esc(t.pair) + '</p>' +
+    '<div class="row"><button class="btn" id="copy">Copy my result</button><button class="btn ghost" id="again">Play again</button></div>' +
+    '<p class="toast" id="toast" role="status"></p>' +
+    '</div>';
+  document.getElementById("again").onclick = () => { step = 0; picks = []; render(); };
+  document.getElementById("copy").onclick = () => {
+    const text = "I got " + t.name + " on the 1978 Wrapped quiz. " + t.tagline + " My top moment: " + topEvent.name + " (" + topEvent.date + ").";
+    const toast = document.getElementById("toast");
+    try {
+      navigator.clipboard.writeText(text).then(
+        () => { toast.textContent = "Copied."; },
+        () => { toast.textContent = text; }
+      );
+    } catch (e) { toast.textContent = text; }
+  };
+}
+
+function render() {
+  if (step === 0) renderStart();
+  else if (step <= QUESTIONS.length) renderQuestion();
+  else renderResult();
+  window.scrollTo(0, 0);
+  const h = document.getElementById("h");
+  if (h) h.focus({ preventScroll: true });
+}
+render();
+</script>
+</body>
+</html>
